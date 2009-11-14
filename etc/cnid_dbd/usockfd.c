@@ -1,5 +1,5 @@
 /*
- * $Id: usockfd.c,v 1.1.4.4.2.1 2005-09-27 10:40:41 didg Exp $
+ * $Id: usockfd.c,v 1.1.4.4.2.2 2009-11-14 10:25:24 franklahm Exp $
  *
  * Copyright (C) Joerg Lenneis 2003
  * All Rights Reserved.  See COPYING.
@@ -82,7 +82,7 @@ int usockfd_create(char *usock_fn, mode_t mode, int backlog)
 int tsockfd_create(char *host, u_int16_t ipport, int backlog)
 {
     int sockfd;
-    struct sockaddr_in server;
+    struct sockaddr_in server = { 0 };
     struct hostent     *hp;  
     int                port;
     
