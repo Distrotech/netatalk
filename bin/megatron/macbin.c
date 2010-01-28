@@ -1,5 +1,5 @@
 /*
- * $Id: macbin.c,v 1.10.10.1.2.1 2005-02-06 10:16:00 didg Exp $
+ * $Id: macbin.c,v 1.10.10.1.2.2 2010-01-28 17:15:52 didg Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -170,14 +170,14 @@ int bin_close( keepflag )
  * return zero and no more than that.
  */
 
-int bin_read( fork, buffer, length )
+ssize_t bin_read( fork, buffer, length )
     int			fork;
     char		*buffer;
-    int			length;
+    size_t		length;
 {
     char		*buf_ptr;
-    int			readlen;
-    int			cc = 1;
+    size_t		readlen;
+    ssize_t		cc = 1;
     off_t		pos;
 
 #if DEBUG >= 3
@@ -185,9 +185,9 @@ int bin_read( fork, buffer, length )
     fprintf( stderr, "bin_read: remaining length is %d\n", bin.forklen[fork] );
 #endif /* DEBUG >= 3 */
 
-    if (bin.forklen[fork] > length) {
-	fprintf(stderr, "This should never happen, dude! length %d, fork length == %u\n", length, bin.forklen[fork]);
-	return bin.forklen[fork];
+    if (bin.forklen[fork] > 0x7FFFFFFF) {
+	fprintf(stderr, "This should never happen, dude! fork length == %u\n", bin.forklen[fork]);
+	return -1;
     }
 
     if ( bin.forklen[ fork ] == 0 ) {
@@ -242,14 +242,14 @@ int bin_read( fork, buffer, length )
  * bin_write 
  */
 
-int bin_write( fork, buffer, length )
+ssize_t bin_write( fork, buffer, length )
     int			fork;
     char		*buffer;
-    int			length;
+    size_t		length;
 {
     char		*buf_ptr;
-    int			writelen;
-    int			cc = 0;
+    size_t		writelen;
+    ssize_t		cc = 0;
     off_t		pos;
     u_char		padchar = 0x7f;
 		/* Not sure why, but it seems this must be 0x7f to match
@@ -285,11 +285,6 @@ int bin_write( fork, buffer, length )
     if ( cc < 0 ) {
 	perror( "Couldn't write to macbinary file:" );
 	return( cc );
-    }
-
-    if (length > bin.forklen[fork]) {
-	fprintf(stderr, "This should never happen, dude! length %d, fork length %u\n", length, bin.forklen[fork]);
-	return bin.forklen[fork];
     }
 
     bin.forklen[fork] -= length;

@@ -1,5 +1,5 @@
 /*
- * $Id: megatron.c,v 1.9.10.1 2005-09-27 10:40:40 didg Exp $
+ * $Id: megatron.c,v 1.9.10.2 2010-01-28 17:15:52 didg Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -64,11 +64,11 @@ int from_open( un, file, fh, flags )
     }
 }
 
-int from_read( un, fork, buf, len )
+ssize_t from_read( un, fork, buf, len )
     int			un;
     int			fork;
     char		*buf;
-    int			len;
+    size_t		len;
 {
     switch ( un ) {
 	case MEGATRON :
@@ -138,10 +138,10 @@ int to_open( to, file, fh, flags )
     }
 }
 
-int to_write( to, fork, bufc )
+ssize_t to_write( to, fork, bufc )
     int			to;
     int			fork;
-    int			bufc;
+    size_t		bufc;
 {
     switch ( to ) {
 	case MEGATRON :
@@ -189,9 +189,9 @@ int megatron( path, module, newname, flags )
 {
     struct stat		st;
     struct FHeader	fh;
-    int			bufc;
+    ssize_t		bufc;
     int			fork;
-    unsigned int	forkred;
+    size_t 		forkred;
 
 /*
  * If the source file is not stdin, make sure it exists and

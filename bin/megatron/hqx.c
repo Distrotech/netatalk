@@ -1,5 +1,5 @@
 /*
- * $Id: hqx.c,v 1.12.4.1.4.2 2005-09-27 10:40:40 didg Exp $
+ * $Id: hqx.c,v 1.12.4.1.4.3 2010-01-28 17:15:52 didg Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -66,15 +66,6 @@
 #define BHH_HEADSIZ		21
 
 u_short		updcrc();
-
-/*	Forward declarations.
- */
-int skip_junk(int line);
-int hqx_close(int keepflag);
-int hqx_header_read(struct FHeader *fh);
-int hqx_header_write(struct FHeader *fh);
-int hqx_7tobin(char *outbuf, int datalen);
-int hqx7_fill(u_char *hqx7_ptr);
 
 #if HEXOUTPUT
 FILE		*rawhex, *expandhex;
@@ -188,14 +179,14 @@ int hqx_close( keepflag )
  * return zero and no more than that.
  */
 
-int hqx_read( fork, buffer, length )
+ssize_t hqx_read( fork, buffer, length )
     int			fork;
     char		*buffer;
-    int			length;
+    size_t		length;
 {
     u_short		storedcrc;
-    int			readlen;
-    int			cc;
+    size_t		readlen;
+    size_t		cc;
 
 #if DEBUG >= 3
     {
@@ -207,9 +198,9 @@ int hqx_read( fork, buffer, length )
     fprintf( stderr, "hqx_read: remaining length is %d\n", hqx.forklen[fork] );
 #endif /* DEBUG >= 3 */
 
-    if (hqx.forklen[fork] > length) {
-	fprintf(stderr, "This should never happen, dude! length %d, fork length == %u\n", length, hqx.forklen[fork]);
-	return hqx.forklen[fork];
+    if (hqx.forklen[fork] > 0x7FFFFFFF) {
+	fprintf(stderr, "This should never happen, dude!, fork length == %u\n", hqx.forklen[fork]);
+	return -1;
     }
 
     if ( hqx.forklen[ fork ] == 0 ) {
@@ -405,11 +396,11 @@ int hqx_header_write( fh )
  * it sets the pointers to the hqx7 buffer up to point to the valid data.
  */
 
-int hqx7_fill( hqx7_ptr )
+ssize_t hqx7_fill( hqx7_ptr )
     u_char		*hqx7_ptr;
 {
-    int			cc;
-    int			cs;
+    ssize_t		cc;
+    size_t		cs;
 
     cs = hqx7_ptr - hqx7_buf;
     if ( cs >= sizeof( hqx7_buf )) return( -1 );
@@ -578,9 +569,9 @@ int			line;
  * file is reached.
  */
 
-int hqx_7tobin( outbuf, datalen ) 
+size_t hqx_7tobin( outbuf, datalen ) 
     char		*outbuf;
-    int			datalen;
+    size_t		datalen;
 {
     static u_char	hqx8[3];
     static int		hqx8i;
